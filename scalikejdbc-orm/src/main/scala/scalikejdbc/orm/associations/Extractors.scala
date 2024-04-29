@@ -23,7 +23,7 @@ sealed trait Extractor[Entity]
 case class BelongsToExtractor[Entity](
   mapper: AssociationsFeature[_],
   fk: String,
-  alias: Alias[_],
+  alias: Alias[Any],
   merge: (Entity, Option[Any]) => Entity,
   includesMerge: (Seq[Entity], Seq[_]) => Seq[Entity] =
     AssociationsFeature.defaultIncludesMerge[Entity, Any],
@@ -43,7 +43,7 @@ case class BelongsToExtractor[Entity](
 case class HasOneExtractor[Entity](
   mapper: AssociationsFeature[_],
   fk: String,
-  alias: Alias[_],
+  alias: Alias[Any],
   merge: (Entity, Option[Any]) => Entity,
   includesMerge: (Seq[Entity], Seq[_]) => Seq[Entity] =
     AssociationsFeature.defaultIncludesMerge[Entity, Any],
@@ -63,7 +63,7 @@ case class HasOneExtractor[Entity](
 case class HasManyExtractor[Entity](
   mapper: AssociationsFeature[_],
   fk: String,
-  alias: Alias[_],
+  alias: Alias[Any],
   merge: (Entity, Seq[Any]) => Entity,
   includesMerge: (Seq[Entity], Seq[_]) => Seq[Entity] =
     AssociationsFeature.defaultIncludesMerge[Entity, Any],

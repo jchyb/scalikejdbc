@@ -117,10 +117,10 @@ trait AssociationsFeature[Entity]
    * @param on join condition
    * @return join definition
    */
-  def createJoinDefinition(
+  def createJoinDefinition[Left, Right](
     joinType: JoinType,
-    left: (AssociationsFeature[_], Alias[_]),
-    right: (AssociationsFeature[_], Alias[_]),
+    left: (AssociationsFeature[_], Alias[Left]),
+    right: (AssociationsFeature[_], Alias[Right]),
     on: SQLSyntax
   ): JoinDefinition[Entity] = {
     val (leftMapper, leftAlias) = left
@@ -156,8 +156,8 @@ trait AssociationsFeature[Entity]
   }
   def joinWithDefaults[Left](
     left: AssociationsFeature[Left],
-    right: AssociationsFeature[_],
-    on: (Alias[Left], Alias[_]) => SQLSyntax
+    right: AssociationsFeature[Entity],
+    on: (Alias[Left], Alias[Entity]) => SQLSyntax
   ): JoinDefinition[Entity] = {
     innerJoinWithDefaults[Left](left, right, on)
   }
@@ -186,8 +186,8 @@ trait AssociationsFeature[Entity]
   }
   def innerJoinWithDefaults[Left](
     left: AssociationsFeature[Left],
-    right: AssociationsFeature[_],
-    on: (Alias[Left], Alias[_]) => SQLSyntax
+    right: AssociationsFeature[Entity],
+    on: (Alias[Left], Alias[Entity]) => SQLSyntax
   ): JoinDefinition[Entity] = {
     createJoinDefinition(
       InnerJoin,
@@ -199,22 +199,22 @@ trait AssociationsFeature[Entity]
 
   // using specified alias
 
-  def join(
-    right: (AssociationsFeature[_], Alias[_]),
-    on: (Alias[Entity], Alias[_]) => SQLSyntax
+  def join[Right](
+    right: (AssociationsFeature[Right], Alias[Right]),
+    on: (Alias[Entity], Alias[Right]) => SQLSyntax
   ): JoinDefinition[Entity] = {
     innerJoin(right, on)
   }
   def join[Left](
     left: (AssociationsFeature[Left], Alias[Left]),
-    right: (AssociationsFeature[_], Alias[_]),
-    on: (Alias[Left], Alias[_]) => SQLSyntax
+    right: (AssociationsFeature[Entity], Alias[Entity]),
+    on: (Alias[Left], Alias[Entity]) => SQLSyntax
   ): JoinDefinition[Entity] = {
     innerJoin(left, right, on)
   }
-  def innerJoin(
-    right: (AssociationsFeature[_], Alias[_]),
-    on: (Alias[Entity], Alias[_]) => SQLSyntax
+  def innerJoin[Right](
+    right: (AssociationsFeature[Right], Alias[Right]),
+    on: (Alias[Entity], Alias[Right]) => SQLSyntax
   ): JoinDefinition[Entity] = {
     createJoinDefinition(
       InnerJoin,
@@ -225,8 +225,8 @@ trait AssociationsFeature[Entity]
   }
   def innerJoin[Left](
     left: (AssociationsFeature[Left], Alias[Left]),
-    right: (AssociationsFeature[_], Alias[_]),
-    on: (Alias[Left], Alias[_]) => SQLSyntax
+    right: (AssociationsFeature[Entity], Alias[Entity]),
+    on: (Alias[Left], Alias[Entity]) => SQLSyntax
   ): JoinDefinition[Entity] = {
     createJoinDefinition(InnerJoin, left, right, on.apply(left._2, right._2))
   }
@@ -259,10 +259,10 @@ trait AssociationsFeature[Entity]
       on.apply(this.defaultAlias, right.defaultAlias.asInstanceOf[Alias[Any]])
     )
   }
-  def leftJoinWithDefaults(
-    left: AssociationsFeature[_],
-    right: AssociationsFeature[_],
-    on: (Alias[_], Alias[_]) => SQLSyntax
+  def leftJoinWithDefaults[Left, Right](
+    left: AssociationsFeature[Left],
+    right: AssociationsFeature[Right],
+    on: (Alias[Left], Alias[Right]) => SQLSyntax
   ): JoinDefinition[_] = {
     createJoinDefinition(
       LeftOuterJoin,
@@ -274,9 +274,9 @@ trait AssociationsFeature[Entity]
 
   // using specified alias
 
-  def leftJoin(
-    right: (AssociationsFeature[_], Alias[_]),
-    on: (Alias[Entity], Alias[_]) => SQLSyntax
+  def leftJoin[Right](
+    right: (AssociationsFeature[Right], Alias[Right]),
+    on: (Alias[Entity], Alias[Right]) => SQLSyntax
   ): JoinDefinition[_] = {
     createJoinDefinition(
       LeftOuterJoin,
@@ -285,10 +285,10 @@ trait AssociationsFeature[Entity]
       on.apply(this.defaultAlias, right._2)
     )
   }
-  def leftJoin(
-    left: (AssociationsFeature[_], Alias[_]),
-    right: (AssociationsFeature[_], Alias[_]),
-    on: (Alias[_], Alias[_]) => SQLSyntax
+  def leftJoin[Left, Right](
+    left: (AssociationsFeature[_], Alias[Left]),
+    right: (AssociationsFeature[_], Alias[Right]),
+    on: (Alias[Left], Alias[Right]) => SQLSyntax
   ): JoinDefinition[_] = {
     createJoinDefinition(
       LeftOuterJoin,
@@ -580,7 +580,7 @@ trait AssociationsFeature[Entity]
     val joinDef = leftJoin(
       this -> this.defaultAlias,
       many,
-      on.asInstanceOf[(Alias[_], Alias[_]) => SQLSyntax]
+      on
     )
     val extractor = extractOneToMany[M](
       mapper = many._1,
@@ -605,10 +605,10 @@ trait AssociationsFeature[Entity]
       through =
         through.asInstanceOf[AssociationsFeature[Any]] -> through.defaultAlias
           .asInstanceOf[Alias[Any]],
-      throughOn = (entity, m1: Alias[_]) =>
+      throughOn = (entity, m1: Alias[Any]) =>
         sqls.eq(entity.field(primaryKeyFieldName), m1.field(throughFk)),
       many = many -> many.defaultAlias,
-      on = (m1: Alias[_], m2: Alias[M2]) =>
+      on = (m1: Alias[Any], m2: Alias[M2]) =>
         sqls.eq(m1.field(manyFk), m2.field(many.primaryKeyFieldName)),
       merge = merge
     )
@@ -626,10 +626,10 @@ trait AssociationsFeature[Entity]
       through =
         through.asInstanceOf[AssociationsFeature[Any]] -> through.defaultAlias
           .asInstanceOf[Alias[Any]],
-      throughOn = (entity, m1: Alias[_]) =>
+      throughOn = (entity, m1: Alias[Any]) =>
         sqls.eq(entity.field(primaryKeyFieldName), m1.field(throughFk)),
       many = many -> many.defaultAlias,
-      on = (m1: Alias[_], m2: Alias[M2]) =>
+      on = (m1: Alias[Any], m2: Alias[M2]) =>
         sqls.eq(m1.field(manyFk), m2.field(many.primaryKeyFieldName)),
       merge = merge
     )
@@ -645,12 +645,12 @@ trait AssociationsFeature[Entity]
 
     val joinDef1 = leftJoin(
       through,
-      throughOn.asInstanceOf[(Alias[_], Alias[_]) => SQLSyntax]
+      throughOn
     )
     val joinDef2 = leftJoin(
       through,
       many,
-      on.asInstanceOf[(Alias[_], Alias[_]) => SQLSyntax]
+      on
     )
     val definitions = new mutable.LinkedHashSet()
       .+=(joinDef1, joinDef2)
@@ -1283,7 +1283,7 @@ trait AssociationsFeature[Entity]
     BelongsToExtractor[Entity](
       mapper,
       fk,
-      alias,
+      alias.asInstanceOf[Alias[Any]],
       merge.asInstanceOf[(Entity, Option[Any]) => Entity],
       includesMerge.asInstanceOf[(Seq[Entity], Seq[Any]) => Seq[Entity]]
     )
@@ -1304,7 +1304,7 @@ trait AssociationsFeature[Entity]
     HasOneExtractor[Entity](
       mapper = mapper,
       fk = fk,
-      alias = alias,
+      alias = alias.asInstanceOf[Alias[Any]],
       merge = merge.asInstanceOf[(Entity, Option[Any]) => Entity],
       includesMerge =
         includesMerge.asInstanceOf[(Seq[Entity], Seq[Any]) => Seq[Entity]]
@@ -1348,7 +1348,7 @@ trait AssociationsFeature[Entity]
     HasManyExtractor[Entity](
       mapper = mapper,
       fk = fk,
-      alias = alias,
+      alias = alias.asInstanceOf[Alias[Any]],
       merge = merge.asInstanceOf[(Entity, Seq[Any]) => Entity],
       includesMerge =
         includesMerge.asInstanceOf[(Seq[Entity], Seq[Any]) => Seq[Entity]]
