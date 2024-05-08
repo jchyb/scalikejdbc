@@ -312,7 +312,7 @@ object Product extends CRUDMapperWithId[ProductId, Product] {
   override def tableName = "products"
   override def defaultAlias = createAlias("prd")
 
-  override def idToRawValue(id: ProductId) = id.value
+  override def idToRawValue(id: ProductId): Any = id.value
   override def rawValueToId(value: Any) = ProductId(value.toString.toLong)
 
   override def extract(rs: WrappedResultSet, p: ResultName[Product]) =

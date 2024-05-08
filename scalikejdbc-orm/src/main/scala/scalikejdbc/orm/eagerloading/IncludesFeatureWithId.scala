@@ -55,7 +55,7 @@ trait IncludesFeatureWithId[Id, Entity]
     new IncludesFeatureWithId[Id, Entity]
       with FinderFeatureWithId[Id, Entity]
       with QueryingFeatureWithId[Id, Entity] {
-      override protected val underlying = _self
+      override protected val underlying: SQLSyntaxSupportBase[Entity] = _self
       override def defaultAlias = _self.defaultAlias
 
       override def tableName = _self.tableName

@@ -39,7 +39,7 @@ trait NoIdJoinsFeature[Entity]
     new NoIdJoinsFeature[Entity]
       with NoIdFinderFeature[Entity]
       with NoIdQueryingFeature[Entity] {
-      override protected val underlying = _self
+      override protected val underlying: SQLSyntaxSupportBase[Entity] = _self
 
       override def defaultAlias = _self.defaultAlias
 

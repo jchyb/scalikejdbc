@@ -49,7 +49,7 @@ trait CRUDFeatureWithId[Id, Entity]
 
     // creates new instance but ideally this should be more DRY & safe implementation
     new CRUDFeatureWithId[Id, Entity] {
-      override protected val underlying = _self
+      override protected val underlying: SQLSyntaxSupportBase[Entity] = _self
       override def defaultAlias = _self.defaultAlias
 
       override def tableName = _self.tableName
@@ -61,7 +61,7 @@ trait CRUDFeatureWithId[Id, Entity]
       override def rawValueToId(value: Any) =
         _self.rawValueToId(value).asInstanceOf[Id]
       // override def idToRawValue(id: Id) = _self.idToRawValue(id)
-      override def idToRawValue(id: Id) = id
+      override def idToRawValue(id: Id): Any = id
 
       override val associations = _self.associations ++ _associations
 
@@ -97,7 +97,7 @@ trait CRUDFeatureWithId[Id, Entity]
 
     // creates new instance but ideally this should be more DRY & safe implementation
     new CRUDFeatureWithId[Id, Entity] {
-      override protected val underlying = _self
+      override protected val underlying: SQLSyntaxSupportBase[Entity] = _self
       override def defaultAlias = _self.defaultAlias
 
       // overwritten table name
